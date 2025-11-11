@@ -1,119 +1,203 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SUT 사용 후기 제출</title>
-  <style>
-    :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
-    body{font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
-    .wrap{max-width:980px;margin:0 auto}
-    .card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
-    h1{margin:0 0 8px;font-size:22px;color:#123}
-    p.lead{margin:0 0 18px;color:var(--muted)}
-    label{display:block;font-weight:700;margin:12px 0 6px}
-    input[type=text], input[type=url], textarea, input[type=number]{
-      width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;
-      font-size:14px;color:#123;
-    }
-    textarea{min-height:140px;resize:vertical}
-    .rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
-    .small{font-size:13px;color:var(--muted)}
-    .btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
-    .mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
-    .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
-    .full{grid-column:1/-1}
-    .note{margin-top:18px;color:var(--muted);font-size:13px}
-    .help{font-size:12px;color:#8b97a8;margin-top:6px}
-    @media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SUT 사용 후기 제출 (base64 upload)</title>
+<style>
+/* ... (기존 스타일 유지) ... */
+:root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
+body{font-family: "Noto Sans KR", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
+.wrap{max-width:980px;margin:0 auto}
+.card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box}
+textarea{min-height:140px}
+.rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
+.btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
+.mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
+.form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+@media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>SUT 사용 후기 제출</h1>
-      <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
+<div class="wrap">
+  <div class="card">
+    <h1>SUT 사용 후기 제출</h1>
+    <p class="lead">이미지는 선택, 최대 10장. (프론트에서 리사이즈하여 전송합니다)</p>
 
-      <!-- FORM: action은 스크립트 배포 URL로 변경하세요 -->
-      <form id="mainForm" action="FORM_ACTION_URL" method="post" enctype="multipart/form-data" target="submitFrame">
-        <div class="form-grid">
-          <div>
-            <label>닉네임</label>
-            <input name="nickname" type="text" placeholder="예: 소미" autocomplete="name" />
+    <form id="mainForm">
+      <div class="form-grid">
+        <div>
+          <label>닉네임</label>
+          <input name="nickname" id="nickname" type="text" placeholder="예: 소미" />
 
-            <label>코드</label>
-            <input name="code" type="text" placeholder="예: 12345" />
+          <label>코드</label>
+          <input name="code" id="code" type="text" />
 
-            <label>소속</label>
-            <input name="affiliation" type="text" placeholder="예: 대전유성" />
+          <label>소속</label>
+          <input name="affiliation" id="affiliation" type="text" />
 
-            <label>이용한 업체 <span class="small" style="color:#c33">*</span></label>
-            <input name="usedStore" type="text" placeholder="예: ○○카페" required />
+          <label>이용한 업체 *</label>
+          <input name="usedStore" id="usedStore" type="text" required />
 
-            <label>업체 링크</label>
-            <input name="storeLink" type="url" placeholder="https://..." />
+          <label>업체 링크</label>
+          <input name="storeLink" id="storeLink" type="url" />
 
-            <label class="full">후기 (200자 이내)</label>
-            <textarea name="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
+          <label>후기 (200자 이내)</label>
+          <textarea id="description" maxlength="200"></textarea>
 
-            <div style="margin-top:14px;">
-              <button type="submit" class="btn">제출하기</button>
-              <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
-            </div>
-
-            <p class="note">제출된 정보는 유튜브 사례 소개 및 블로그 게시용으로 사용됩니다. 개인정보는 안전하게 처리됩니다.</p>
+          <div style="margin-top:12px">
+            <button id="submitBtn" class="btn" type="button">제출하기</button>
+            <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
           </div>
 
-          <div>
-            <div class="rightBox">
-              <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
-              <p class="small">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
-              <input id="files" name="photos" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
-              <p class="help">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
-              <p class="small" style="margin-top:10px;color:#c33">먼저 각 커뮤니티, 스타방 및 블로그를 통해 SUT실물경제 후기를 공유해주세요.</p>
-            </div>
+          <p style="margin-top:12px;color:#6b7785;font-size:13px">제출된 정보는 블로그/유튜브 사례용으로 사용될 수 있습니다.</p>
+        </div>
+
+        <div>
+          <div class="rightBox">
+            <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
+            <p style="font-size:13px;color:#6b7785">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
+            <input id="files" name="files" type="file" accept="image/*" multiple style="width:100%;margin-top:8px" />
+            <p style="font-size:12px;color:#8b97a8;margin-top:8px">※ 10장 초과 시 업로드 차단</p>
           </div>
         </div>
-      </form>
+      </div>
+    </form>
 
-      <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
-    </div>
+    <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
   </div>
+</div>
 
-  <script>
-    // 배포된 Apps Script exec URL을 여기에 넣으세요 (예: "https://script.google.com/macros/s/AKfy.../exec")
-    const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbyq2fH4W5WbjXWKQoUQ_ZdxXBRY1JeZOilmcY1_m7JRQRLZeL8iQxM0hlrLNdMvnOzq/exec";
-    document.getElementById('mainForm').action = FORM_ACTION_URL;
+<script>
+/*
+  권장 동작:
+  - 파일을 읽어 canvas로 리사이즈 (가로/세로 max 1200)
+  - toDataURL('image/jpeg', 0.8)로 JPEG 압축
+  - dataURL -> base64(헤더 제거)로 서버에 JSON POST
+*/
 
-    // 파일 개수 제한 체크 (최대 10장)
-    document.getElementById('files').addEventListener('change', function(e){
-      var files = e.target.files;
-      if (files.length > 10) {
-        alert("사진은 최대 10장까지 업로드 가능합니다.");
-        e.target.value = ""; // 선택 초기화
-      }
+const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbyq2fH4W5WbjXWKQoUQ_ZdxXBRY1JeZOilmcY1_m7JRQRLZeL8iQxM0hlrLNdMvnOzq/exec"; // <- 반드시 바꿀 것
+const MAX_FILES = 10;
+const MAX_DIM = 1200;         // 가로/세로 최대 픽셀
+const JPEG_QUALITY = 0.78;    // 압축 품질(0~1)
+
+function dataURLtoBase64(durl){
+  // remove prefix "data:image/...;base64,"
+  return durl.split(',')[1];
+}
+
+function resizeImageFile(file){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e => {
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > MAX_DIM || h > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / w, MAX_DIM / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // draw
+        ctx.drawImage(img, 0, 0, w, h);
+        // jpeg dataurl
+        try {
+          const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+          resolve({ name: file.name, type: 'image/jpeg', data: dataURLtoBase64(dataUrl) });
+        } catch (err){
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error('image load error'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('file read error'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function gatherFormData(){
+  const nickname = document.getElementById('nickname').value || '';
+  const code = document.getElementById('code').value || '';
+  const affiliation = document.getElementById('affiliation').value || '';
+  const usedStore = document.getElementById('usedStore').value || '';
+  const storeLink = document.getElementById('storeLink').value || '';
+  const description = document.getElementById('description').value || '';
+
+  // files
+  const filesInput = document.getElementById('files');
+  const files = filesInput.files || [];
+  if (files.length > MAX_FILES) throw new Error("사진은 최대 10장까지 가능합니다.");
+
+  const images = [];
+  for (let i=0;i<files.length;i++){
+    const f = files[i];
+    // 이미지만 허용
+    if (!f.type.startsWith('image/')) continue;
+    const resized = await resizeImageFile(f); // base64 payload
+    images.push(resized);
+  }
+
+  return {
+    nickname, code, affiliation, usedStore, storeLink, description,
+    images
+  };
+}
+
+document.getElementById('submitBtn').addEventListener('click', async function(){
+  try {
+    this.disabled = true;
+    this.textContent = "전송 중...";
+
+    // gather and send
+    const payload = await gatherFormData();
+
+    // small validation
+    if (!payload.usedStore) {
+      alert("이용한 업체를 입력해주세요.");
+      this.disabled = false; this.textContent = "제출하기";
+      return;
+    }
+
+    // send JSON via fetch
+    const resp = await fetch(FORM_ACTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      mode: 'cors'
     });
 
-    // postMessage 수신기 (iframe 응답 처리)
-    window.addEventListener("message", function(ev){
-      try {
-        var d = ev.data;
-        if (typeof d === "string") {
-          try { d = JSON.parse(d); } catch(e){ }
-        }
-        if (d && typeof d === "object" && d.ok !== undefined) {
-          if (d.ok) {
-            alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || "확인 불가"));
-            document.getElementById('mainForm').reset();
-          } else {
-            alert("서버 응답 오류: " + (d.message || JSON.stringify(d)));
-          }
-          return;
-        }
-      } catch (err) {
-        console.error("postMessage error:", err);
+    // 서버가 iframe 방식으로 postMessage 보내면 we won't get JSON here.
+    // Many Apps Script responses will return HTML; try parse JSON:
+    const text = await resp.text();
+    console.log('server raw text:', text);
+    // 시도: JSON이면 알림, 아니면 텍스트 보여줌
+    try {
+      const j = JSON.parse(text);
+      if (j.ok) {
+        alert("제출 성공! 저장 폴더: " + (j.folderUrl || "확인불가"));
+        document.getElementById('mainForm').reset();
+      } else {
+        alert("서버 오류: " + (j.message || JSON.stringify(j)));
       }
-    }, false);
-  </script>
+    } catch(e) {
+      // HTML 혹은 iframe 응답인 경우 직접 알림
+      alert("서버 응답: " + text.substring(0,200));
+    }
+
+  } catch(err){
+    console.error(err);
+    alert("전송 에러: " + err.message);
+  } finally {
+    this.disabled = false;
+    this.textContent = "제출하기";
+  }
+});
+</script>
 </body>
 </html>
