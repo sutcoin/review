@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SUT 사용 후기 제출 (base64 upload)</title>
+<title>SUT 사용 후기 제출 (iframe 전송)</title>
 <style>
-/* ... (기존 스타일 유지) ... */
 :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
 body{font-family: "Noto Sans KR", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
 .wrap{max-width:980px;margin:0 auto}
@@ -18,186 +17,105 @@ textarea{min-height:140px}
 .mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
 .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
 @media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
+.small{font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
     <h1>SUT 사용 후기 제출</h1>
-    <p class="lead">이미지는 선택, 최대 10장. (프론트에서 리사이즈하여 전송합니다)</p>
+    <p class="small">사진 선택 → 서버에 저장 (최대 10장).</p>
 
-    <form id="mainForm">
+    <!-- 주목: action은 아래 JS에서 세팅합니다. target은 iframe -->
+    <form id="mainForm" method="post" enctype="multipart/form-data" target="submitFrame">
       <div class="form-grid">
         <div>
-          <label>닉네임</label>
-          <input name="nickname" id="nickname" type="text" placeholder="예: 소미" />
-
-          <label>코드</label>
-          <input name="code" id="code" type="text" />
-
-          <label>소속</label>
-          <input name="affiliation" id="affiliation" type="text" />
-
-          <label>이용한 업체 *</label>
-          <input name="usedStore" id="usedStore" type="text" required />
-
-          <label>업체 링크</label>
-          <input name="storeLink" id="storeLink" type="url" />
-
-          <label>후기 (200자 이내)</label>
-          <textarea id="description" maxlength="200"></textarea>
+          <label>닉네임</label><input name="nickname" id="nickname" type="text" />
+          <label>코드</label><input name="code" id="code" type="text" />
+          <label>소속</label><input name="affiliation" id="affiliation" type="text" />
+          <label>이용한 업체 *</label><input name="usedStore" id="usedStore" type="text" required />
+          <label>업체 링크</label><input name="storeLink" id="storeLink" type="url" />
+          <label>후기 (200자 이내)</label><textarea id="description" name="description" maxlength="200"></textarea>
 
           <div style="margin-top:12px">
             <button id="submitBtn" class="btn" type="button">제출하기</button>
             <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
           </div>
-
-          <p style="margin-top:12px;color:#6b7785;font-size:13px">제출된 정보는 블로그/유튜브 사례용으로 사용될 수 있습니다.</p>
+          <p class="small" style="margin-top:10px">제출된 정보는 블로그/유튜브 사례용으로 사용될 수 있습니다.</p>
         </div>
 
         <div>
           <div class="rightBox">
             <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
-            <p style="font-size:13px;color:#6b7785">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
-            <input id="files" name="files" type="file" accept="image/*" multiple style="width:100%;margin-top:8px" />
-            <p style="font-size:12px;color:#8b97a8;margin-top:8px">※ 10장 초과 시 업로드 차단</p>
+            <p class="small">권장: 1200px 이하, 파일당 1~2MB</p>
+            <!-- name="photos" 여러개 파일 전송 가능 -->
+            <input id="files" name="photos" type="file" accept="image/*" multiple style="width:100%" />
+            <p class="small" style="margin-top:8px">10장 초과 시 제출 불가</p>
           </div>
         </div>
       </div>
     </form>
 
+    <!-- 숨은 iframe (서버 응답을 여기에 받음) -->
     <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
   </div>
 </div>
 
 <script>
-/*
-  권장 동작:
-  - 파일을 읽어 canvas로 리사이즈 (가로/세로 max 1200)
-  - toDataURL('image/jpeg', 0.8)로 JPEG 압축
-  - dataURL -> base64(헤더 제거)로 서버에 JSON POST
-*/
+(async function(){
+  // 배포된 Apps Script exec URL로 바꿔주세요:
+  const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbyq2fH4W5WbjXWKQoUQ_ZdxXBRY1JeZOilmcY1_m7JRQRLZeL8iQxM0hlrLNdMvnOzq/exec";
 
-const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbyq2fH4W5WbjXWKQoUQ_ZdxXBRY1JeZOilmcY1_m7JRQRLZeL8iQxM0hlrLNdMvnOzq/exec"; // <- 반드시 바꿀 것
-const MAX_FILES = 10;
-const MAX_DIM = 1200;         // 가로/세로 최대 픽셀
-const JPEG_QUALITY = 0.78;    // 압축 품질(0~1)
+  // 폼에 action 설정
+  const form = document.getElementById('mainForm');
+  form.action = FORM_ACTION_URL;
 
-function dataURLtoBase64(durl){
-  // remove prefix "data:image/...;base64,"
-  return durl.split(',')[1];
-}
-
-function resizeImageFile(file){
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
-    reader.onload = e => {
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > MAX_DIM || h > MAX_DIM) {
-          const ratio = Math.min(MAX_DIM / w, MAX_DIM / h);
-          w = Math.round(w * ratio);
-          h = Math.round(h * ratio);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        // draw
-        ctx.drawImage(img, 0, 0, w, h);
-        // jpeg dataurl
-        try {
-          const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-          resolve({ name: file.name, type: 'image/jpeg', data: dataURLtoBase64(dataUrl) });
-        } catch (err){
-          reject(err);
-        }
-      };
-      img.onerror = () => reject(new Error('image load error'));
-      img.src = e.target.result;
-    };
-    reader.onerror = () => reject(new Error('file read error'));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function gatherFormData(){
-  const nickname = document.getElementById('nickname').value || '';
-  const code = document.getElementById('code').value || '';
-  const affiliation = document.getElementById('affiliation').value || '';
-  const usedStore = document.getElementById('usedStore').value || '';
-  const storeLink = document.getElementById('storeLink').value || '';
-  const description = document.getElementById('description').value || '';
-
-  // files
-  const filesInput = document.getElementById('files');
-  const files = filesInput.files || [];
-  if (files.length > MAX_FILES) throw new Error("사진은 최대 10장까지 가능합니다.");
-
-  const images = [];
-  for (let i=0;i<files.length;i++){
-    const f = files[i];
-    // 이미지만 허용
-    if (!f.type.startsWith('image/')) continue;
-    const resized = await resizeImageFile(f); // base64 payload
-    images.push(resized);
-  }
-
-  return {
-    nickname, code, affiliation, usedStore, storeLink, description,
-    images
-  };
-}
-
-document.getElementById('submitBtn').addEventListener('click', async function(){
-  try {
-    this.disabled = true;
-    this.textContent = "전송 중...";
-
-    // gather and send
-    const payload = await gatherFormData();
-
-    // small validation
-    if (!payload.usedStore) {
+  const MAX_FILES = 10;
+  const fileInput = document.getElementById('files');
+  document.getElementById('submitBtn').addEventListener('click', function(){
+    // 기본 검증
+    if (!document.getElementById('usedStore').value.trim()) {
       alert("이용한 업체를 입력해주세요.");
-      this.disabled = false; this.textContent = "제출하기";
+      return;
+    }
+    if (fileInput.files.length > MAX_FILES) {
+      alert("사진은 최대 10장까지 업로드 가능합니다.");
       return;
     }
 
-    // send JSON via fetch
-    const resp = await fetch(FORM_ACTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      mode: 'cors'
-    });
+    // 폼을 submit (브라우저가 직접 전송, CORS 문제 없음)
+    this.disabled = true;
+    this.textContent = "전송 중...";
+    form.submit();
 
-    // 서버가 iframe 방식으로 postMessage 보내면 we won't get JSON here.
-    // Many Apps Script responses will return HTML; try parse JSON:
-    const text = await resp.text();
-    console.log('server raw text:', text);
-    // 시도: JSON이면 알림, 아니면 텍스트 보여줌
+    // iframe으로부터 postMessage 받기: window.addEventListener 아래에서 처리
+    setTimeout(()=>{ this.disabled = false; this.textContent = "제출하기"; }, 5000);
+  });
+
+  // iframe 메시지 수신(서버가 HTML 안에서 parent.postMessage를 실행해야 함)
+  window.addEventListener("message", function(ev){
     try {
-      const j = JSON.parse(text);
-      if (j.ok) {
-        alert("제출 성공! 저장 폴더: " + (j.folderUrl || "확인불가"));
-        document.getElementById('mainForm').reset();
-      } else {
-        alert("서버 오류: " + (j.message || JSON.stringify(j)));
+      // 서버가 JSON 문자열을 보냈을 경우 처리
+      let data = ev.data;
+      if (typeof data === "string") {
+        try { data = JSON.parse(data); } catch(e) { /* not JSON */ }
       }
-    } catch(e) {
-      // HTML 혹은 iframe 응답인 경우 직접 알림
-      alert("서버 응답: " + text.substring(0,200));
+      if (data && data.ok) {
+        alert("제출 완료!\n저장 폴더: " + (data.folderUrl || "확인불가"));
+        form.reset();
+        return;
+      }
+      if (data && data.ok === false) {
+        alert("서버 오류: " + (data.message || JSON.stringify(data)));
+        return;
+      }
+      // 다른 메시지는 무시
+    } catch(err){
+      console.error("iframe message error", err);
     }
+  }, false);
 
-  } catch(err){
-    console.error(err);
-    alert("전송 에러: " + err.message);
-  } finally {
-    this.disabled = false;
-    this.textContent = "제출하기";
-  }
-});
+})();
 </script>
 </body>
 </html>
