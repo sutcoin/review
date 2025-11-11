@@ -1,198 +1,86 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SUT 사용 후기 제출</title>
-  <style>
-    :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
-    body{font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
-    .wrap{max-width:980px;margin:0 auto}
-    .card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
-    label{display:block;font-weight:700;margin:12px 0 6px}
-    input[type=text], input[type=url], textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;}
-    textarea{min-height:140px}
-    .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
-    .full{grid-column:1/-1}
-    .btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
-    .mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
-    @media(max-width:880px){ .form-grid{grid-template-columns:1fr} }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUT 후기 제출</title>
+
+<style>
+body { font-family: sans-serif; background:#f3f7fb; padding: 30px; }
+.card { background:#fff; padding:20px; border-radius:12px; max-width:800px; margin:auto; }
+input, textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-top:6px; }
+button { padding:12px; border-radius:8px; border:0; cursor:pointer; background:#0066ff; color:#fff; width:100%; margin-top:15px; }
+
+#overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none;
+           align-items:center; justify-content:center; color:#fff; font-size:20px; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>SUT 사용 후기 제출</h1>
-      <p class="lead">사진은 클라이언트에서 자동 리사이즈(가로/세로 최대 1200px) 후 전송됩니다. (최대 10장, 후기 200자)</p>
 
-      <form id="visibleForm">
-        <div class="form-grid">
-          <div>
-            <label>닉네임</label><input name="nickname" id="nickname" type="text" placeholder="예: 소미" />
-            <label>코드</label><input name="code" id="code" type="text" />
-            <label>소속</label><input name="affiliation" id="affiliation" type="text" />
-            <label>이용한 업체 *</label><input name="usedStore" id="usedStore" type="text" required />
-            <label>업체 링크</label><input name="storeLink" id="storeLink" type="url" />
-            <label class="full">후기 (200자 이내)</label><textarea id="description" maxlength="200" name="description"></textarea>
+<div id="overlay">전송중입니다...</div>
 
-            <div style="margin-top:14px;">
-              <button id="submitBtn" class="btn" type="button">제출하기</button>
-              <button type="button" class="mutedBtn" onclick="document.getElementById('visibleForm').reset();">양식 초기화</button>
-            </div>
-          </div>
+<div class="card">
+  <h2>SUT 사용 후기 제출</h2>
 
-          <div>
-            <div style="border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff">
-              <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
-              <p style="margin:0 0 8px;color:#6b7785">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하 (자동 리사이즈 적용)</p>
-              <input id="files" type="file" accept="image/*" multiple style="width:100%" />
-              <p style="font-size:12px;color:#8b97a8;margin-top:8px">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
-            </div>
-          </div>
-        </div>
-      </form>
+  <label>닉네임</label>
+  <input id="nickname">
 
-      <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
-    </div>
-  </div>
+  <label>코드</label>
+  <input id="code">
 
-  <script>
-    // *** 배포한 Apps Script Exec URL로 바꾸세요 ***
-    const EXEC_URL = "https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec";
+  <label>소속</label>
+  <input id="affiliation">
 
-    const MAX_FILES = 10;
-    const MAX_DIM = 1200; // 가로/세로 최대 픽셀 (리사이즈 기준)
-    const IMAGE_QUALITY = 0.8; // JPEG 품질(0~1)
+  <label>이용한 업체 *</label>
+  <input id="usedStore">
 
-    const filesInput = document.getElementById('files');
-    const submitBtn = document.getElementById('submitBtn');
+  <label>업체 링크</label>
+  <input id="storeLink">
 
-    function fileToImage(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-          img.src = reader.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
+  <label>후기 (200자)</label>
+  <textarea id="description" maxlength="200"></textarea>
 
-    function resizeImageToDataURL(img, mimeType, maxDim, quality) {
-      var w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) {
-        if (w > h) {
-          h = Math.round(h * (maxDim / w));
-          w = maxDim;
-        } else {
-          w = Math.round(w * (maxDim / h));
-          h = maxDim;
-        }
-      }
-      var canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      // 기본 jpeg로 내보내기
-      return canvas.toDataURL(mimeType || 'image/jpeg', quality || 0.8);
-    }
+  <label>이미지 첨부 (최대 10장)</label>
+  <input type="file" id="files" multiple accept="image/*">
 
-    async function prepareImages(files) {
-      let arr = [];
-      for (let i=0;i<files.length && i<MAX_FILES;i++){
-        const f = files[i];
-        // 이미지 여부 확인
-        if (!f.type || !f.type.startsWith('image/')) continue;
-        try {
-          const img = await fileToImage(f);
-          // 리사이즈
-          const dataUrl = resizeImageToDataURL(img, 'image/jpeg', MAX_DIM, IMAGE_QUALITY);
-          arr.push({ name: f.name, data: dataUrl });
-        } catch(err){
-          console.warn("파일 처리 실패:", f.name, err);
-        }
-      }
-      return arr;
-    }
+  <button onclick="submitForm()">제출하기</button>
+  <p id="result"></p>
+</div>
 
-    submitBtn.addEventListener('click', async function(){
-      const usedStore = document.getElementById('usedStore').value || "";
-      if (!usedStore.trim()) { alert("이용한 업체를 입력해주세요."); return; }
 
-      const files = filesInput.files;
-      if (files && files.length > MAX_FILES) { alert("사진은 최대 10장까지 업로드 가능합니다."); return; }
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec";
 
-      // 이미지 준비 (리사이즈 + base64)
-      let imagesArr = [];
-      if (files && files.length > 0) {
-        try {
-          imagesArr = await prepareImages(files);
-          console.log("prepared images count:", imagesArr.length);
-        } catch(err){
-          alert("이미지 처리 중 오류가 발생했습니다.");
-          console.error(err);
-          return;
-        }
-      }
+async function submitForm() {
+  document.getElementById("overlay").style.display = "flex";
+  const result = document.getElementById("result");
 
-      // 동적 폼 생성 (multipart가 아닌 x-www-form-urlencoded 형태로 전송)
-      const tempForm = document.createElement('form');
-      tempForm.method = "post";
-      tempForm.action = EXEC_URL;
-      tempForm.target = "submitFrame";
+  try {
+    const form = new FormData();
+    form.append("nickname", nickname.value);
+    form.append("code", code.value);
+    form.append("affiliation", affiliation.value);
+    form.append("usedStore", usedStore.value);
+    form.append("storeLink", storeLink.value);
+    form.append("description", description.value);
 
-      const addHidden = (name, value) => {
-        const inp = document.createElement('input');
-        inp.type = "hidden";
-        inp.name = name;
-        inp.value = value;
-        tempForm.appendChild(inp);
-      };
+    [...files.files].forEach(file => form.append("photos", file));
 
-      addHidden('nickname', document.getElementById('nickname').value || "");
-      addHidden('code', document.getElementById('code').value || "");
-      addHidden('affiliation', document.getElementById('affiliation').value || "");
-      addHidden('usedStore', document.getElementById('usedStore').value || "");
-      addHidden('storeLink', document.getElementById('storeLink').value || "");
-      addHidden('description', document.getElementById('description').value || "");
-
-      if (imagesArr.length > 0) {
-        addHidden('images', JSON.stringify(imagesArr));
-      }
-
-      document.body.appendChild(tempForm);
-
-      // 제출
-      tempForm.submit();
-
-      // 폼 제거
-      setTimeout(()=> { try{ document.body.removeChild(tempForm);}catch(e){} }, 2000);
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: form,
     });
 
-    // iframe 응답 수신
-    window.addEventListener("message", function(ev){
-      try {
-        var d = ev.data;
-        if (typeof d === "string") {
-          try { d = JSON.parse(d); } catch(e){ /* not json */ }
-        }
-        if (d && typeof d === "object" && d.ok !== undefined) {
-          if (d.ok) {
-            alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || d.parentFolderUrl || "확인 불가"));
-            document.getElementById('visibleForm').reset();
-            filesInput.value = "";
-          } else {
-            alert("서버 오류: " + (d.message || JSON.stringify(d)));
-          }
-        }
-      } catch(err) {
-        console.error("iframe message handler error:", err);
-      }
-    }, false);
-  </script>
+    const json = await res.json();
+    result.innerHTML = `✅ 제출 완료!<br>📁 폴더: <a href="${json.folderUrl}" target="_blank">열기</a>`;
+    document.getElementById("overlay").style.display = "none";
+  }
+  catch(err) {
+    result.innerHTML = `❌ 전송 실패: ${err}`;
+    document.getElementById("overlay").style.display = "none";
+  }
+}
+</script>
+
 </body>
 </html>
