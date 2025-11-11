@@ -6,13 +6,13 @@
   <title>SUT 사용 후기 제출</title>
   <style>
     :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
-    body{font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
+    body{font-family: "Noto Sans KR", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
     .wrap{max-width:980px;margin:0 auto}
     .card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
     h1{margin:0 0 8px;font-size:22px;color:#123}
     p.lead{margin:0 0 18px;color:var(--muted)}
     label{display:block;font-weight:700;margin:12px 0 6px}
-    input[type=text], input[type=url], textarea, input[type=number]{
+    input[type=text], input[type=url], textarea{
       width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;
       font-size:14px;color:#123;
     }
@@ -24,25 +24,14 @@
     .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
     .full{grid-column:1/-1}
     .note{margin-top:18px;color:var(--muted);font-size:13px}
-    .help{font-size:12px;color:#8b97a8;margin-top:6px}
     @media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
 
     /* overlay */
-    #overlay {
-      display:none;
-      position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.35);
-      z-index:9999;align-items:center;justify-content:center;
-    }
-    #overlay .box{
-      background:#fff;padding:20px 24px;border-radius:10px;text-align:center;min-width:260px;
-      box-shadow:0 10px 40px rgba(0,0,0,0.2);
-    }
-    .spinner{
-      width:36px;height:36px;border-radius:50%;border:4px solid #e6eef9;border-top-color:var(--accent);animation:spin 1s linear infinite;margin:0 auto 12px;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .overlay-error{color:#c33;margin-top:8px}
-    .overlay-success{color:green;margin-top:8px}
+    #overlay { display:none; position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.35); z-index:9999; align-items:center; justify-content:center;}
+    #overlay .box{ background:#fff; padding:18px 22px; border-radius:10px; min-width:260px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2);}
+    .spinner{ width:36px; height:36px; border-radius:50%; border:4px solid #e6eef9; border-top-color:var(--accent); animation:spin 1s linear infinite; margin:0 auto 12px;}
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+    .overlay-error{ color:#c33; margin-top:8px }
   </style>
 </head>
 <body>
@@ -51,12 +40,12 @@
       <h1>SUT 사용 후기 제출</h1>
       <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
 
-      <!-- 변경: action은 아래 스크립트에서 자동 설정 -->
-      <form id="mainForm" method="post" enctype="multipart/form-data" target="submitFrame">
+      <!-- action은 아래 JS에서 자동 설정 -->
+      <form id="mainForm" method="post" enctype="application/x-www-form-urlencoded" target="submitFrame">
         <div class="form-grid">
           <div>
             <label>닉네임</label>
-            <input name="nickname" type="text" placeholder="예: 소미" autocomplete="name" />
+            <input name="nickname" type="text" placeholder="예: 소미" />
 
             <label>코드</label>
             <input name="code" type="text" placeholder="예: 12345" />
@@ -73,6 +62,9 @@
             <label class="full">후기 (200자 이내)</label>
             <textarea name="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
 
+            <!-- images JSON will be added into a hidden textarea before submit -->
+            <textarea id="imagesJson" name="images" style="display:none"></textarea>
+
             <div style="margin-top:14px;">
               <button id="submitBtn" type="submit" class="btn">제출하기</button>
               <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
@@ -85,8 +77,8 @@
             <div class="rightBox">
               <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
               <p class="small">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
-              <input id="files" name="photos" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
-              <p class="help">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
+              <input id="files" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
+              <p class="small" style="margin-top:8px">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
             </div>
           </div>
         </div>
@@ -96,23 +88,23 @@
     </div>
   </div>
 
-  <!-- overlay -->
   <div id="overlay">
     <div class="box">
       <div class="spinner"></div>
       <div id="overlayText">전송중입니다... 잠시만 기다려주세요.</div>
       <div id="overlayMsg" class="overlay-error" style="display:none"></div>
-      <div style="margin-top:10px"><button id="cancelBtn" style="display:none">취소</button></div>
+      <div style="margin-top:12px"><button id="cancelBtn" style="display:none">취소</button></div>
     </div>
   </div>
 
 <script>
-  // *** 반드시 여기에 본인 Apps Script 웹앱 exec URL 넣기 ***
-  const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec"; // <-- 여기를 배포된 exec URL로 바꿔주세요
+  // =========== 반드시 본인의 Apps Script exec URL로 바꿔주세요 ===========
+  const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec";
+  // ==================================================================
 
-  // DOM
   const form = document.getElementById('mainForm');
   const filesInput = document.getElementById('files');
+  const imagesJson = document.getElementById('imagesJson');
   const overlay = document.getElementById('overlay');
   const overlayText = document.getElementById('overlayText');
   const overlayMsg = document.getElementById('overlayMsg');
@@ -120,86 +112,117 @@
   const submitBtn = document.getElementById('submitBtn');
   const iframe = document.getElementById('submitFrame');
 
-  // 폼 action 설정
   form.action = FORM_ACTION_URL;
 
-  // 파일 수 제한
-  filesInput.addEventListener('change', function(e){
-    if (e.target.files.length > 10) {
-      alert("사진은 최대 10장까지 업로드 가능합니다.");
-      e.target.value = "";
-    }
+  // 파일 개수 제한
+  filesInput.addEventListener('change', (e)=>{
+    if (e.target.files.length > 10) { alert("사진은 최대 10장까지 업로드 가능합니다."); e.target.value = ""; }
   });
 
-  let timeoutId = null;
-
+  // on submit: read files as dataURL, set hidden input images, then submit form
   form.addEventListener('submit', function(ev){
-    // 제출 이벤트가 들어오면 오버레이 띄우고 타임아웃 시작
+    ev.preventDefault();
+
+    // collect non-file fields first (we will submit after reading files)
     overlay.style.display = "flex";
     overlayMsg.style.display = "none";
     overlayText.textContent = "전송중입니다... 잠시만 기다려주세요.";
     submitBtn.disabled = true;
+    cancelBtn.style.display = "none";
 
-    // 타임아웃: 30초 내에 완료 메시지 못 받으면 오류 안내
+    const files = filesInput.files;
+    if (!files || files.length === 0) {
+      // no images -> submit with empty images
+      imagesJson.value = JSON.stringify([]);
+      form.submit();
+      startTimeout();
+      return;
+    }
+
+    if (files.length > 10) {
+      overlayMsg.style.display = "block";
+      overlayMsg.textContent = "사진은 최대 10장까지 업로드 가능합니다.";
+      submitBtn.disabled = false;
+      overlay.style.display = "none";
+      return;
+    }
+
+    // read files -> dataURL list
+    const readers = [];
+    for (let i=0;i<files.length;i++){
+      readers.push(readFileAsDataURL(files[i]));
+    }
+    Promise.all(readers).then(results=>{
+      // results: [{name,type,dataUrl}]
+      imagesJson.value = JSON.stringify(results);
+      // finally submit to iframe
+      form.submit();
+      startTimeout();
+    }).catch(err=>{
+      overlayMsg.style.display = "block";
+      overlayMsg.textContent = "파일 읽기 실패: " + err;
+      overlay.style.display = "none";
+      submitBtn.disabled = false;
+    });
+  });
+
+  function readFileAsDataURL(file){
+    return new Promise(function(resolve, reject){
+      const r = new FileReader();
+      r.onload = function(ev){
+        resolve({ name: file.name, type: file.type || "application/octet-stream", data: ev.target.result });
+      };
+      r.onerror = function(e){ reject(e); };
+      r.readAsDataURL(file);
+    });
+  }
+
+  // 타임아웃 (30s)
+  let timeoutId = null;
+  function startTimeout(){
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(function(){
       overlayMsg.style.display = "block";
-      overlayMsg.textContent = "전송이 지연되고 있습니다. 네트워크 상태를 확인하거나 콘솔 로그를 확인하세요.";
+      overlayMsg.textContent = "전송이 지연되고 있습니다. 네트워크 상태나 콘솔 로그를 확인하세요.";
       cancelBtn.style.display = "inline-block";
-    }, 30000); // 30초
+      cancelBtn.onclick = function(){
+        overlay.style.display = "none";
+        overlayMsg.style.display = "none";
+        cancelBtn.style.display = "none";
+        submitBtn.disabled = false;
+        try { iframe.src = "about:blank"; } catch(e){}
+      };
+    }, 30000);
+  }
 
-    // show cancel
-    cancelBtn.onclick = function(){
-      overlay.style.display = "none";
-      overlayMsg.style.display = "none";
-      cancelBtn.style.display = "none";
-      submitBtn.disabled = false;
-      // iframe 초기화
-      try { iframe.src = "about:blank"; } catch(e){}
-    };
-  });
-
-  // message 이벤트 수신: iframe에서 전송된 postMessage 수신
+  // iframe에서 postMessage 받기
   window.addEventListener("message", function(ev){
-    // 보안: 실제로는 특정 origin만 허용 (예: script.google.com)
-    // 여기선 편의상 모든 origin을 허용. 필요시 비교해서 차단하세요.
     try {
       let d = ev.data;
-      // 어떤 경우 문자열로 옴 -> JSON 파싱 시도
       if (typeof d === "string") {
-        try { d = JSON.parse(d); } catch(e) { /* not json */ }
+        try { d = JSON.parse(d); } catch(e) { /* ignore */ }
       }
       console.log("parent received message:", d, "origin:", ev.origin);
 
-      if (d && typeof d === "object") {
+      if (d && typeof d === "object" && d.ok !== undefined) {
         if (d.ok) {
           overlayText.textContent = "전송 완료되었습니다.";
           overlayMsg.style.display = "none";
-          // 성공 안내 잠시 보여주고 닫기
-          setTimeout(function(){
-            overlay.style.display = "none";
-            submitBtn.disabled = false;
-            form.reset();
-          }, 1200);
+          setTimeout(()=>{ overlay.style.display = "none"; submitBtn.disabled = false; form.reset(); imagesJson.value = ""; }, 1200);
         } else {
           overlayMsg.style.display = "block";
           overlayMsg.textContent = "서버 오류: " + (d.message || JSON.stringify(d));
           submitBtn.disabled = false;
         }
         if (timeoutId) clearTimeout(timeoutId);
-      } else {
-        console.warn("알 수 없는 메시지:", ev.data);
       }
-    } catch (err) {
+    } catch(err){
       console.error("message handler error:", err);
     }
   }, false);
 
-  // 디버깅 팁: iframe onload 로그(iframe이 로드됐는지 확인)
-  iframe.addEventListener('load', function(){
-    console.log("iframe loaded. src=", iframe.src);
-    // 일부 경우 iframe이 빈문서로 로드되면 메시지가 안옴 -> overlay에 알림
-  });
+  // iframe load 로그(디버깅)
+  iframe.addEventListener('load', ()=>{ console.log("iframe loaded:", iframe.src); });
 
 </script>
 </body>
