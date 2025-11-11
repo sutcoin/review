@@ -1,178 +1,108 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SUT 사용 후기 제출</title>
-<style>
-  :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
-  body{font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
-  .wrap{max-width:980px;margin:0 auto}
-  .card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
-  h1{margin:0 0 8px;font-size:22px;color:#123}
-  p.lead{margin:0 0 18px;color:var(--muted)}
-  label{display:block;font-weight:700;margin:12px 0 6px}
-  input[type=text], input[type=url], textarea, input[type=number], input[type=file]{
-    width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;
-    font-size:14px;color:#123;
-  }
-  textarea{min-height:140px;resize:vertical}
-  .rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
-  .small{font-size:13px;color:var(--muted)}
-  .btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
-  .mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
-  .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
-  .full{grid-column:1/-1}
-  .note{margin-top:18px;color:var(--muted);font-size:13px}
-  .help{font-size:12px;color:#8b97a8;margin-top:6px}
-  @media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SUT 사용 후기 제출</title>
+  <style>
+    body{font-family:Arial, sans-serif;padding:20px;background:#f3f7fb}
+    .card{background:#fff;padding:20px;border-radius:10px;max-width:760px;margin:0 auto;box-shadow:0 6px 18px rgba(20,36,80,0.06)}
+    label{display:block;margin-top:12px;font-weight:700}
+    input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef9;background:#fbfeff}
+    textarea{min-height:120px}
+    .right{float:right;width:260px;padding:12px;border:1px dashed #e6eef9;border-radius:8px;background:#fbfeff}
+    .btn{background:#0066ff;color:#fff;padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+    .muted{background:#fff;border:1px solid #e6eef9;padding:10px 12px;border-radius:8px}
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>SUT 사용 후기 제출</h1>
-      <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
+  <div class="card">
+    <h2>SUT 사용 후기 제출</h2>
+    <p>이미지는 선택입니다. (최대 1장 — 안정화 후 다중 업로드로 확장 가능)</p>
 
-      <!-- 반드시 배포된 Apps Script web app exec URL로 바꿔주세요 -->
-      <form id="mainForm" action="FORM_ACTION_URL" method="post" enctype="multipart/form-data" target="submitFrame">
-        <div class="form-grid">
-          <div>
-            <label>닉네임</label>
-            <input name="nickname" type="text" placeholder="예: 소미" autocomplete="name" />
+    <form id="mainForm" action="GAS_EXEC_URL" method="post" target="submitFrame">
+      <label>닉네임</label>
+      <input name="nickname" type="text" placeholder="예: 소미">
 
-            <label>코드</label>
-            <input name="code" type="text" placeholder="예: 12345" />
+      <label>업체명 (사용한 업체)</label>
+      <input name="company" type="text" placeholder="예: ○○카페">
 
-            <label>소속</label>
-            <input name="affiliation" type="text" placeholder="예: 대전유성" />
+      <label>메모 (200자 이내)</label>
+      <textarea name="memo" maxlength="200" placeholder="후기"></textarea>
 
-            <label>이용한 업체 <span class="small" style="color:#c33">*</span></label>
-            <input name="usedStore" id="usedStore" type="text" placeholder="예: ○○카페" required />
+      <div style="margin-top:12px;">
+        <label>사진 첨부 (선택)</label>
+        <input id="fileInput" type="file" accept="image/*">
+        <!-- hidden input으로 base64를 넣어 보냄 -->
+        <input id="hiddenImage" name="image" type="hidden" />
+      </div>
 
-            <label>업체 링크</label>
-            <input name="storeLink" type="url" placeholder="https://..." />
+      <div style="margin-top:14px;">
+        <button class="btn" id="submitBtn" type="submit">제출하기</button>
+        <button type="button" class="muted" onclick="mainForm.reset();">초기화</button>
+      </div>
+    </form>
 
-            <label class="full">후기 (200자 이내)</label>
-            <textarea name="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
+    <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
 
-            <!-- 숨긴 필드: payload가 JSON(base64 이미지 포함)을 담아 전송 -->
-            <textarea name="payload" id="payload" style="display:none"></textarea>
-
-            <div style="margin-top:14px;">
-              <button id="submitBtn" type="button" class="btn">제출하기</button>
-              <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
-            </div>
-
-            <p class="note">제출된 정보는 블로그 게시용으로 사용됩니다. 개인정보는 안전하게 처리됩니다.</p>
-          </div>
-
-          <div>
-            <div class="rightBox">
-              <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
-              <p class="small">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
-              <input id="files" name="photos" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
-              <p class="help">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
-            </div>
-          </div>
-        </div>
-      </form>
-
-      <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
-    </div>
+    <p id="status" style="margin-top:12px;color:#333"></p>
   </div>
 
-<script>
-/*
-  사용법:
-  1) 이 파일의 FORM_ACTION_URL 을 Apps Script web app exec URL 으로 바꾸세요.
-  2) 제출 버튼 클릭 -> 파일들을 base64로 읽어 payload에 JSON 넣고 폼(target iframe) 제출
-  3) 서버가 iframe으로 HTML 응답을 반환하면 그 HTML이 parent로 postMessage로 결과를 보냄
-*/
+  <script>
+    // 1) 여기에 배포된 Apps Script 웹 앱 URL을 넣으세요
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec"; // <-- 배포한 web app URL
+    document.getElementById('mainForm').action = GAS_URL;
 
-const MAX_FILES = 10;
+    // 2) 파일 → base64 변환 후 hidden input에 넣기
+    document.getElementById('mainForm').addEventListener('submit', function(ev){
+      ev.preventDefault();
+      document.getElementById('status').innerText = "전송 중... 잠시만 기다려주세요.";
 
-// replace at runtime if you prefer; or edit the form action directly
-// const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec";
-// document.getElementById('mainForm').action = FORM_ACTION_URL;
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) {
+        // 이미지 없으면 바로 submit (iframe)
+        this.submit();
+        return;
+      }
 
-document.getElementById('files').addEventListener('change', function(e){
-  if (e.target.files.length > MAX_FILES) {
-    alert("사진은 최대 " + MAX_FILES + "장까지 업로드 가능합니다.");
-    e.target.value = "";
-  }
-});
+      // 파일 크기 체크 (권장 2MB 이하)
+      if (file.size > 5*1024*1024) {
+        if (!confirm("파일이 큰 편입니다. 계속하시겠습니까?")) {
+          document.getElementById('status').innerText = "전송 취소됨";
+          return;
+        }
+      }
 
-document.getElementById('submitBtn').addEventListener('click', async function(){
-  const form = document.getElementById('mainForm');
+      const reader = new FileReader();
+      reader.onload = function(evt){
+        document.getElementById('hiddenImage').value = evt.target.result; // dataURL
+        document.getElementById('mainForm').submit();
+      };
+      reader.onerror = function(err){
+        alert("파일을 읽는 중 오류가 발생했습니다.");
+        console.error(err);
+      };
+      reader.readAsDataURL(file);
+    });
 
-  // 기본 필수 필드 검사
-  const usedStore = document.getElementById('usedStore').value.trim();
-  if (!usedStore) { alert("이용한 업체명을 입력해주세요."); return; }
-
-  // 수집할 폼 필드
-  const data = {
-    nickname: (form.querySelector('[name=nickname]')||{value:''}).value.trim(),
-    code: (form.querySelector('[name=code]')||{value:''}).value.trim(),
-    affiliation: (form.querySelector('[name=affiliation]')||{value:''}).value.trim(),
-    usedStore: usedStore,
-    storeLink: (form.querySelector('[name=storeLink]')||{value:''}).value.trim(),
-    description: (form.querySelector('[name=description]')||{value:''}).value.trim(),
-    images: [] // { name, type, base64 }
-  };
-
-  // 파일 → base64
-  const input = document.getElementById('files');
-  const files = input.files || [];
-  if (files.length > 0) {
-    // read each file
-    for (let i=0;i<files.length && i<MAX_FILES;i++){
-      const f = files[i];
-      const base64 = await readFileAsBase64(f);
-      // base64 format: data:<mime>;base64,XXXXX  -> strip prefix
-      const commaIndex = base64.indexOf(',');
-      const b64data = commaIndex >= 0 ? base64.slice(commaIndex+1) : base64;
-      data.images.push({ name: f.name || ("image_"+i), type: f.type || "image/jpeg", data: b64data });
-    }
-  }
-
-  // payload 숨김 textarea에 JSON으로 넣고 폼 제출 (form enctype multipart/form-data — body에 큰 텍스트 포함)
-  document.getElementById('payload').value = JSON.stringify(data);
-
-  // 제출 버튼 비활성화(중복 방지)
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('submitBtn').innerText = "전송 중...";
-
-  // submit -> target iframe
-  form.submit();
-});
-
-// iframe 응답은 postMessage로 받는다
-window.addEventListener('message', function(ev){
-  try {
-    // 원격에서 온 메시지 (apps script 응답 HTML이 postMessage로 전송)
-    let d = ev.data;
-    if (typeof d === 'string') {
-      try { d = JSON.parse(d); } catch(e) {}
-    }
-    if (!d) return;
-    if (d.ok) {
-      alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || "확인 불가"));
-      document.getElementById('mainForm').reset();
-    } else {
-      alert("제출 실패: " + (d.message || JSON.stringify(d)));
-    }
-  } catch(err){ console.error("message handling error", err); }
-}, false);
-
-function readFileAsBase64(file){
-  return new Promise((resolve, reject)=>{
-    const r = new FileReader();
-    r.onload = ()=> resolve(r.result);
-    r.onerror = ()=> reject(r.error);
-    r.readAsDataURL(file);
-  });
-}
-</script>
+    // 3) iframe이 부모창으로 postMessage 보낼 때 받기
+    window.addEventListener("message", function(ev){
+      try {
+        var d = ev.data;
+        // 문자열이면 parse 시도
+        if (typeof d === "string") {
+          try { d = JSON.parse(d); } catch(e){ }
+        }
+        console.log("postMessage received:", d);
+        if (d && d.ok) {
+          document.getElementById('status').innerHTML = "제출 완료! 저장 폴더: <a href=\"" + (d.folderUrl || "#") + "\" target=\"_blank\">열기</a>";
+        } else {
+          document.getElementById('status').innerText = "서버 오류: " + (d && d.message ? d.message : JSON.stringify(d));
+        }
+      } catch(err) {
+        console.error(err);
+      }
+    }, false);
+  </script>
 </body>
 </html>
