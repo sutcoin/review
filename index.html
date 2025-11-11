@@ -91,22 +91,43 @@
       }
     });
 
-    // 서버에서 iframe으로 응답했을 때 postMessage로 결과를 받음
+    // 안전한 postMessage 수신기 (디버깅용 로그 포함)
     window.addEventListener("message", function(ev){
       try {
+        console.log("[MSG EVENT] origin:", ev.origin, "source:", ev.source, "data:", ev.data);
         var d = ev.data;
-        // 서버가 문자열을 보냈을 경우
+
+        // 문자열로 왔으면 JSON으로 파싱 시도(많은 AppsScript가 문자열로 보냄)
         if (typeof d === "string") {
-          alert(d);
+          try {
+            d = JSON.parse(d);
+            console.log("[MSG PARSED STRING->JSON]", d);
+          } catch(parseErr){
+            console.warn("수신된 문자열이 JSON이 아님(무시):", d);
+            return; // 무시
+          }
+        }
+
+        // 기대 포맷: { ok: true|false, folderUrl: "...", message: "..."}
+        if (d && typeof d === "object" && d.ok !== undefined) {
+          if (d.ok) {
+            alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || "확인 불가"));
+            document.getElementById('mainForm').reset();
+          } else {
+            alert("서버 응답 오류: " + (d.message || JSON.stringify(d)));
+          }
           return;
         }
-        // JSON 형태로 왔다면
-        if (d && d.ok) {
-          alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || "확인 불가"));
-          document.getElementById('mainForm').reset();
-        } else {
-          alert("서버 응답 오류: " + (d && d.message ? d.message : JSON.stringify(d)));
+
+        // 확장 등에서 보내는 메시지일 경우(예: {"target":"station:inpage",...}) 무시
+        if (d && d.target) {
+          console.log("외부 메시지(무시):", d);
+          return;
         }
+
+        // 알 수 없는 데이터는 무시
+        console.warn("알 수 없는 postMessage 데이터 무시:", d);
+
       } catch (err) {
         console.error("postMessage handling error:", err);
       }
