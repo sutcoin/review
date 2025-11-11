@@ -1,101 +1,101 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SUT 사용 후기 제출</title>
-<style>
-/* (생략: 스타일은 위에서 사용하신 걸 그대로 사용) */
-:root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
-body{font-family: "Noto Sans KR", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
-.wrap{max-width:980px;margin:0 auto}
-.card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
-h1{margin:0 0 8px;font-size:22px;color:#123}
-p.lead{margin:0 0 18px;color:var(--muted)}
-label{display:block;font-weight:700;margin:12px 0 6px}
-input[type=text], input[type=url], textarea{
-  width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;
-  font-size:14px;color:#123;
-}
-textarea{min-height:140px;resize:vertical}
-.rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
-.small{font-size:13px;color:var(--muted)}
-.btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
-.mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
-.form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
-.full{grid-column:1/-1}
-.note{margin-top:18px;color:var(--muted);font-size:13px}
-@media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
-
-/* overlay */
-#overlay { display:none; position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.35); z-index:9999; align-items:center; justify-content:center;}
-#overlay .box{ background:#fff; padding:18px 22px; border-radius:10px; min-width:260px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2);}
-.spinner{ width:36px; height:36px; border-radius:50%; border:4px solid #e6eef9; border-top-color:var(--accent); animation:spin 1s linear infinite; margin:0 auto 12px;}
-@keyframes spin{ to{ transform:rotate(360deg); } }
-.overlay-error{ color:#c33; margin-top:8px }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SUT 사용 후기 제출</title>
+  <style>
+    :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
+    body{font-family: "Noto Sans KR", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
+    .wrap{max-width:980px;margin:0 auto}
+    .card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
+    h1{margin:0 0 8px;font-size:22px;color:#123}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    label{display:block;font-weight:700;margin:12px 0 6px}
+    input[type=text], input[type=url], textarea{ width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;font-size:14px;color:#123;}
+    textarea{min-height:140px;resize:vertical}
+    .rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
+    .small{font-size:13px;color:var(--muted)}
+    .btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
+    .mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
+    .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .full{grid-column:1/-1}
+    .note{margin-top:18px;color:var(--muted);font-size:13px}
+    @media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
+    /* overlay */
+    #overlay { display:none; position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.35); z-index:9999; align-items:center; justify-content:center;}
+    #overlay .box{ background:#fff; padding:18px 22px; border-radius:10px; min-width:260px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2);}
+    .spinner{ width:36px; height:36px; border-radius:50%; border:4px solid #e6eef9; border-top-color:var(--accent); animation:spin 1s linear infinite; margin:0 auto 12px;}
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+    .overlay-error{ color:#c33; margin-top:8px }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>SUT 사용 후기 제출</h1>
-    <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
+  <div class="wrap">
+    <div class="card">
+      <h1>SUT 사용 후기 제출</h1>
+      <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
 
-    <form id="mainForm" method="post" enctype="application/x-www-form-urlencoded" target="submitFrame">
-      <div class="form-grid">
-        <div>
-          <label>닉네임</label>
-          <input name="nickname" type="text" placeholder="예: 소미" />
-          <label>코드</label>
-          <input name="code" type="text" placeholder="예: 12345" />
-          <label>소속</label>
-          <input name="affiliation" type="text" placeholder="예: 대전유성" />
-          <label>이용한 업체 <span class="small" style="color:#c33">*</span></label>
-          <input name="usedStore" type="text" placeholder="예: ○○카페" required />
-          <label>업체 링크</label>
-          <input name="storeLink" type="url" placeholder="https://..." />
-          <label class="full">후기 (200자 이내)</label>
-          <textarea name="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
+      <form id="mainForm" method="post" enctype="application/x-www-form-urlencoded" target="submitFrame">
+        <div class="form-grid">
+          <div>
+            <label>닉네임</label>
+            <input name="nickname" type="text" placeholder="예: 소미" />
 
-          <!-- images JSON will be put into this hidden textarea -->
-          <textarea id="imagesJson" name="images" style="display:none"></textarea>
+            <label>코드</label>
+            <input name="code" type="text" placeholder="예: 12345" />
 
-          <div style="margin-top:14px;">
-            <button id="submitBtn" type="submit" class="btn">제출하기</button>
-            <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
+            <label>소속</label>
+            <input name="affiliation" type="text" placeholder="예: 대전유성" />
+
+            <label>이용한 업체 <span class="small" style="color:#c33">*</span></label>
+            <input name="usedStore" type="text" placeholder="예: ○○카페" required />
+
+            <label>업체 링크</label>
+            <input name="storeLink" type="url" placeholder="https://..." />
+
+            <label class="full">후기 (200자 이내)</label>
+            <textarea name="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
+
+            <!-- images JSON will be put here before submit -->
+            <textarea id="imagesJson" name="images" style="display:none"></textarea>
+
+            <div style="margin-top:14px;">
+              <button id="submitBtn" type="submit" class="btn">제출하기</button>
+              <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
+            </div>
+
+            <p class="note">제출된 정보는 유튜브 사례 소개 및 블로그 게시용으로 사용됩니다. 개인정보는 안전하게 처리됩니다.</p>
           </div>
 
-          <p class="note">제출된 정보는 유튜브 사례 소개 및 블로그 게시용으로 사용됩니다. 개인정보는 안전하게 처리됩니다.</p>
-        </div>
-
-        <div>
-          <div class="rightBox">
-            <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
-            <p class="small">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
-            <input id="files" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
-            <p class="small" style="margin-top:8px">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
+          <div>
+            <div class="rightBox">
+              <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
+              <p class="small">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
+              <input id="files" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
+              <p class="small" style="margin-top:8px">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
+            </div>
           </div>
         </div>
-      </div>
-    </form>
+      </form>
 
-    <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
+      <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
+    </div>
   </div>
-</div>
 
-<div id="overlay">
-  <div class="box">
-    <div class="spinner"></div>
-    <div id="overlayText">전송중입니다... 잠시만 기다려주세요.</div>
-    <div id="overlayMsg" class="overlay-error" style="display:none"></div>
-    <div style="margin-top:12px"><button id="cancelBtn" style="display:none">취소</button></div>
+  <div id="overlay">
+    <div class="box">
+      <div class="spinner"></div>
+      <div id="overlayText">전송중입니다... 잠시만 기다려주세요.</div>
+      <div id="overlayMsg" class="overlay-error" style="display:none"></div>
+      <div style="margin-top:12px"><button id="cancelBtn" style="display:none">취소</button></div>
+    </div>
   </div>
-</div>
 
 <script>
-  // =========== 반드시 본인의 Apps Script exec URL로 바꿔주세요 ===========
+  // =========== 이 값은 '웹 앱 배포' 후 받는 exec URL 로 반드시 변경하세요 ===========
   const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbzHJ3Nsjty9GAEz0nKWIYD0UBmEyLuHKntJL76Ud0zI31k7Rin6S_yhjZ1FE37ckRap-w/exec";
-  // ==================================================================
+  // ==============================================================================
 
   const form = document.getElementById('mainForm');
   const filesInput = document.getElementById('files');
@@ -115,7 +115,6 @@ textarea{min-height:140px;resize:vertical}
 
   form.addEventListener('submit', function(ev){
     ev.preventDefault();
-
     overlay.style.display = "flex";
     overlayMsg.style.display = "none";
     overlayText.textContent = "전송중입니다... 잠시만 기다려주세요.";
@@ -129,12 +128,11 @@ textarea{min-height:140px;resize:vertical}
       startTimeout();
       return;
     }
-
     if (files.length > 10) {
       overlayMsg.style.display = "block";
       overlayMsg.textContent = "사진은 최대 10장까지 업로드 가능합니다.";
-      submitBtn.disabled = false;
       overlay.style.display = "none";
+      submitBtn.disabled = false;
       return;
     }
 
@@ -208,7 +206,6 @@ textarea{min-height:140px;resize:vertical}
   }, false);
 
   iframe.addEventListener('load', ()=>{ console.log("iframe loaded:", iframe.src); });
-
 </script>
 </body>
 </html>
