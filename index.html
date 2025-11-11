@@ -36,7 +36,7 @@
       <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
 
       <!-- FORM: action에 Apps Script exec URL 넣으세요 -->
-      <form id="mainForm" action="FORM_ACTION_URL" method="post" enctype="multipart/form-data" target="submitFrame">
+      <form id="mainForm" action="https://script.google.com/macros/s/AKfycbzIjANxI0GSlUdggMn7EOx2uL_BzCOKBLQsXbzIiiZNRmowOmvS0zc-efhkyDn3eCWFaw/exec" method="post" enctype="multipart/form-data" target="submitFrame">
         <div class="form-grid">
           <div>
             <label>닉네임</label>
@@ -82,10 +82,6 @@
   </div>
 
   <script>
-    // 배포된 Apps Script exec URL을 아래에 넣으세요 (예: https://script.google.com/macros/s/XXXX/exec)
-    const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbzIjANxI0GSlUdggMn7EOx2uL_BzCOKBLQsXbzIiiZNRmowOmvS0zc-efhkyDn3eCWFaw/exec";
-    document.getElementById('mainForm').action = FORM_ACTION_URL;
-
     // 파일 개수 제한 체크 (최대 10장)
     document.getElementById('files').addEventListener('change', function(e){
       var files = e.target.files;
