@@ -12,10 +12,7 @@
     h1{margin:0 0 8px;font-size:22px;color:#123}
     p.lead{margin:0 0 18px;color:var(--muted)}
     label{display:block;font-weight:700;margin:12px 0 6px}
-    input[type=text], input[type=url], textarea{
-      width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;
-      font-size:14px;color:#123;
-    }
+    input[type=text], input[type=url], textarea{ width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;font-size:14px;color:#123;}
     textarea{min-height:140px;resize:vertical}
     .rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
     .small{font-size:13px;color:var(--muted)}
@@ -40,7 +37,6 @@
       <h1>SUT 사용 후기 제출</h1>
       <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
 
-      <!-- action은 아래 JS에서 자동 설정 -->
       <form id="mainForm" method="post" enctype="application/x-www-form-urlencoded" target="submitFrame">
         <div class="form-grid">
           <div>
@@ -62,7 +58,7 @@
             <label class="full">후기 (200자 이내)</label>
             <textarea name="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
 
-            <!-- images JSON will be added into a hidden textarea before submit -->
+            <!-- hidden images JSON -->
             <textarea id="imagesJson" name="images" style="display:none"></textarea>
 
             <div style="margin-top:14px;">
@@ -98,9 +94,9 @@
   </div>
 
 <script>
-  // =========== 반드시 본인의 Apps Script exec URL로 바꿔주세요 ===========
+  // === 여기에 본인의 Apps Script exec URL로 바꿔 주세요 ===
   const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbzHJ3Nsjty9GAEz0nKWIYD0UBmEyLuHKntJL76Ud0zI31k7Rin6S_yhjZ1FE37ckRap-w/exec";
-  // ==================================================================
+  // ======================================================
 
   const form = document.getElementById('mainForm');
   const filesInput = document.getElementById('files');
@@ -119,11 +115,8 @@
     if (e.target.files.length > 10) { alert("사진은 최대 10장까지 업로드 가능합니다."); e.target.value = ""; }
   });
 
-  // on submit: read files as dataURL, set hidden input images, then submit form
   form.addEventListener('submit', function(ev){
     ev.preventDefault();
-
-    // collect non-file fields first (we will submit after reading files)
     overlay.style.display = "flex";
     overlayMsg.style.display = "none";
     overlayText.textContent = "전송중입니다... 잠시만 기다려주세요.";
@@ -132,7 +125,6 @@
 
     const files = filesInput.files;
     if (!files || files.length === 0) {
-      // no images -> submit with empty images
       imagesJson.value = JSON.stringify([]);
       form.submit();
       startTimeout();
@@ -147,15 +139,13 @@
       return;
     }
 
-    // read files -> dataURL list
     const readers = [];
     for (let i=0;i<files.length;i++){
       readers.push(readFileAsDataURL(files[i]));
     }
     Promise.all(readers).then(results=>{
-      // results: [{name,type,dataUrl}]
+      // results: [{name,type,data}]
       imagesJson.value = JSON.stringify(results);
-      // finally submit to iframe
       form.submit();
       startTimeout();
     }).catch(err=>{
@@ -170,14 +160,13 @@
     return new Promise(function(resolve, reject){
       const r = new FileReader();
       r.onload = function(ev){
-        resolve({ name: file.name, type: file.type || "application/octet-stream", data: ev.target.result });
+        resolve({ name: file.name, type: file.type || "image/jpeg", data: ev.target.result });
       };
       r.onerror = function(e){ reject(e); };
       r.readAsDataURL(file);
     });
   }
 
-  // 타임아웃 (30s)
   let timeoutId = null;
   function startTimeout(){
     if (timeoutId) clearTimeout(timeoutId);
@@ -195,12 +184,11 @@
     }, 30000);
   }
 
-  // iframe에서 postMessage 받기
   window.addEventListener("message", function(ev){
     try {
       let d = ev.data;
       if (typeof d === "string") {
-        try { d = JSON.parse(d); } catch(e) { /* ignore */ }
+        try { d = JSON.parse(d); } catch(e) { /* not JSON */ }
       }
       console.log("parent received message:", d, "origin:", ev.origin);
 
@@ -221,7 +209,6 @@
     }
   }, false);
 
-  // iframe load 로그(디버깅)
   iframe.addEventListener('load', ()=>{ console.log("iframe loaded:", iframe.src); });
 
 </script>
