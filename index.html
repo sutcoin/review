@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>업체/후기 제출</title>
+  <title>SUT 사용 후기 제출</title>
   <style>
-    :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#7a8796}
-    body{font-family: "Noto Sans KR", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
+    :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
+    body{font-family: "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
     .wrap{max-width:980px;margin:0 auto}
     .card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
     h1{margin:0 0 8px;font-size:22px;color:#123}
     p.lead{margin:0 0 18px;color:var(--muted)}
     label{display:block;font-weight:700;margin:12px 0 6px}
-    .row{display:flex;gap:12px}
+    .row{display:flex;gap:12px;align-items:center}
     input[type=text], input[type=url], textarea, input[type=number]{
       width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;
       font-size:14px;color:#123;
     }
-    textarea{min-height:120px;resize:vertical}
+    textarea{min-height:140px;resize:vertical}
     .rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
     .small{font-size:13px;color:var(--muted)}
     .btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
@@ -25,68 +25,53 @@
     .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
     .full{grid-column:1/-1}
     .note{margin-top:18px;color:var(--muted);font-size:13px}
+    .help{font-size:12px;color:#8b97a8;margin-top:6px}
     @media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>업체 정보 / 후기 제출</h1>
-      <p class="lead">업체정보 또는 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (이미지 최대 10장)</p>
+      <h1>SUT 사용 후기 제출</h1>
+      <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
 
-      <!-- FORM: action 반드시 배포된 Apps Script exec URL로 교체 -->
+      <!-- FORM: action에 Apps Script exec URL 넣으세요 -->
       <form id="mainForm" action="FORM_ACTION_URL" method="post" enctype="multipart/form-data" target="submitFrame">
         <div class="form-grid">
           <div>
             <label>닉네임</label>
-            <input name="nickname" type="text" placeholder="예: 홍길동" />
+            <input name="nickname" type="text" placeholder="예: 소미" autocomplete="name" />
 
             <label>코드</label>
-            <input name="code" type="text" placeholder="예: ABC123" />
+            <input name="code" type="text" placeholder="예: 12345" />
 
             <label>소속</label>
-            <input name="affiliation" type="text" placeholder="예: ○○협회" />
+            <input name="affiliation" type="text" placeholder="예: 대전유성" />
 
             <label>이용한 업체 <span class="small" style="color:#c33">*</span></label>
             <input name="usedStore" type="text" placeholder="예: ○○카페" required />
 
-            <label>주소</label>
-            <input name="address" type="text" placeholder="예: 대전광역시 ..." />
+            <label>업체 링크</label>
+            <input name="storeLink" type="url" placeholder="https://..." />
 
-            <div class="row" style="margin-top:6px">
-              <div style="flex:1">
-                <label>전화번호</label>
-                <input name="phone" type="text" placeholder="010-1234-5678" />
-              </div>
-              <div style="width:160px">
-                <label>SUT 할인율 (%)</label>
-                <input name="discount" type="number" min="0" max="100" placeholder="예: 10" />
-              </div>
-            </div>
-
-            <label>네이버지도 링크</label>
-            <input name="mapUrl" type="url" placeholder="https://map.naver.com/..." />
-
-            <label>태그</label>
-            <input name="tags" type="text" placeholder="#카페 #디저트" />
-
-            <label class="full">업체 소개 / 후기 (200자 이내)</label>
+            <label class="full">후기 (200자 이내)</label>
             <textarea name="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
 
-            <div style="margin-top:14px">
+            <div style="margin-top:14px;">
               <button type="submit" class="btn">제출하기</button>
               <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
             </div>
 
-            <p class="note">제출된 정보는 블로그 게시용으로 사용됩니다. 개인정보는 안전하게 처리됩니다.</p>
+            <p class="note">제출된 정보는 유튜브 사례 소개 및 블로그 게시용으로 사용됩니다. 개인정보는 안전하게 처리됩니다.</p>
           </div>
 
           <div>
             <div class="rightBox">
-              <h3 style="margin:0 0 8px">업체홍보 사진 (최대 10장)</h3>
+              <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
               <p class="small">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
               <input id="files" name="photos" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
-              <p class="small" style="margin-top:10px;color:#c33">주의: 파일 업로드 실패 시 앱스크립트 실행 로그(Executions)를 확인하세요.</p>
+              <p class="help">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
+              <p class="small" style="margin-top:10px;color:#c33">먼저 각 커뮤니티, 스타방 및 블로그를 통해 SUT실물경제 후기를 공유해주세요.</p>
             </div>
           </div>
         </div>
@@ -97,25 +82,37 @@
   </div>
 
   <script>
-    // 여기에 Apps Script exec URL을 넣어주세요 (배포 후 얻은 /exec URL)
+    // 배포된 Apps Script exec URL을 아래에 넣으세요 (예: https://script.google.com/macros/s/XXXX/exec)
     const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbzIjANxI0GSlUdggMn7EOx2uL_BzCOKBLQsXbzIiiZNRmowOmvS0zc-efhkyDn3eCWFaw/exec";
     document.getElementById('mainForm').action = FORM_ACTION_URL;
 
-    // iframe 으로 제출된 후 서버가 반환하는 HTML에서 부모창으로 postMessage가 오면 처리
+    // 파일 개수 제한 체크 (최대 10장)
+    document.getElementById('files').addEventListener('change', function(e){
+      var files = e.target.files;
+      if (files.length > 10) {
+        alert("사진은 최대 10장까지 업로드 가능합니다.");
+        e.target.value = ""; // 선택 초기화
+      }
+    });
+
+    // 서버에서 iframe으로 응답했을 때 postMessage로 결과를 받음
     window.addEventListener("message", function(ev){
       try {
         var d = ev.data;
+        // 서버가 문자열을 보냈을 경우
         if (typeof d === "string") {
-          // 서버가 문자열을 보냈을 때
           alert(d);
-        } else if (d && d.ok) {
-          alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || ""));
+          return;
+        }
+        // JSON 형태로 왔다면
+        if (d && d.ok) {
+          alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || "확인 불가"));
           document.getElementById('mainForm').reset();
         } else {
-          alert("서버 응답 실패: " + (d && d.message ? d.message : JSON.stringify(d)));
+          alert("서버 응답 오류: " + (d && d.message ? d.message : JSON.stringify(d)));
         }
-      } catch(err) {
-        console.error("message handle err", err);
+      } catch (err) {
+        console.error("postMessage handling error:", err);
       }
     }, false);
   </script>
