@@ -1,86 +1,125 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SUT 후기 제출</title>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SUT 사용 후기 제출</title>
 <style>
-body { font-family: sans-serif; background:#f3f7fb; padding: 30px; }
-.card { background:#fff; padding:20px; border-radius:12px; max-width:800px; margin:auto; }
-input, textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-top:6px; }
-button { padding:12px; border-radius:8px; border:0; cursor:pointer; background:#0066ff; color:#fff; width:100%; margin-top:15px; }
-
-#overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none;
-           align-items:center; justify-content:center; color:#fff; font-size:20px; }
+  :root{--bg:#f3f7fb;--card:#fff;--accent:#0066ff;--muted:#6b7785}
+  body{font-family: "Noto Sans KR", Arial, sans-serif; background:var(--bg); margin:0;padding:28px}
+  .wrap{max-width:980px;margin:0 auto}
+  .card{background:var(--card);border-radius:12px;padding:26px;box-shadow:0 8px 24px rgba(20,36,80,0.06)}
+  h1{margin:0 0 8px;font-size:22px;color:#123}
+  label{display:block;font-weight:700;margin:12px 0 6px}
+  input[type=text], input[type=url], textarea { width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;font-size:14px;color:#123;}
+  textarea{min-height:140px;resize:vertical}
+  .rightBox{border:1px dashed #e6eef9;padding:14px;border-radius:10px;background:#fbfeff}
+  .btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
+  .mutedBtn{background:#fff;border:1px solid #e6eef9;color:#123;padding:10px 14px;border-radius:10px}
+  .form-grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+  .full{grid-column:1/-1}
+  #overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;color:#fff;font-size:18px;z-index:9999}
+  @media(max-width:880px){ .form-grid{grid-template-columns:1fr} .rightBox{order:-1} }
 </style>
 </head>
 <body>
+<div id="overlay">전송중입니다... 잠시만 기다려주세요.</div>
 
-<div id="overlay">전송중입니다...</div>
+<div class="wrap">
+  <div class="card">
+    <h1>SUT 사용 후기 제출</h1>
+    <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
 
-<div class="card">
-  <h2>SUT 사용 후기 제출</h2>
+    <!-- **중요**: 아래 FORM_ACTION_URL 을 Apps Script 웹앱 URL로 바꿔주세요 -->
+    <form id="mainForm" action="https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec" method="post" enctype="multipart/form-data" target="submitFrame">
+      <div class="form-grid">
+        <div>
+          <label>닉네임</label>
+          <input name="nickname" id="nickname" type="text" placeholder="예: 소미" />
 
-  <label>닉네임</label>
-  <input id="nickname">
+          <label>코드</label>
+          <input name="code" id="code" type="text" placeholder="예: 12345" />
 
-  <label>코드</label>
-  <input id="code">
+          <label>소속</label>
+          <input name="affiliation" id="affiliation" type="text" placeholder="예: 대전유성" />
 
-  <label>소속</label>
-  <input id="affiliation">
+          <label>이용한 업체 <span style="color:#c33">*</span></label>
+          <input name="usedStore" id="usedStore" type="text" placeholder="예: ○○카페" required />
 
-  <label>이용한 업체 *</label>
-  <input id="usedStore">
+          <label>업체 링크</label>
+          <input name="storeLink" id="storeLink" type="url" placeholder="https://..." />
 
-  <label>업체 링크</label>
-  <input id="storeLink">
+          <label class="full">후기 (200자 이내)</label>
+          <textarea name="description" id="description" maxlength="200" placeholder="가게를 소개하거나 후기를 적어주세요. (200자 이내)"></textarea>
 
-  <label>후기 (200자)</label>
-  <textarea id="description" maxlength="200"></textarea>
+          <div style="margin-top:14px;">
+            <button type="submit" class="btn">제출하기</button>
+            <button type="button" class="mutedBtn" onclick="document.getElementById('mainForm').reset();">양식 초기화</button>
+          </div>
 
-  <label>이미지 첨부 (최대 10장)</label>
-  <input type="file" id="files" multiple accept="image/*">
+          <p class="note" style="margin-top:10px;color:#6b7785">제출된 정보는 블로그/홍보용으로 사용됩니다. 개인정보는 안전하게 처리됩니다.</p>
+        </div>
 
-  <button onclick="submitForm()">제출하기</button>
-  <p id="result"></p>
+        <div>
+          <div class="rightBox">
+            <h3 style="margin:0 0 8px">사진 첨부 (최대 10장)</h3>
+            <p style="font-size:13px;color:#6b7785">권장: 가로/세로 1200px 이하, 파일당 1~2MB 이하</p>
+            <!-- name="photos" 로 설정 (중요) -->
+            <input id="files" name="photos" type="file" accept="image/*" multiple style="margin-top:10px;width:100%" />
+            <p class="help">※ 여러 장 업로드 시 10장을 초과하면 업로드가 차단됩니다.</p>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- 숨긴 iframe: 서버 응답을 여기로 받음 -->
+    <iframe name="submitFrame" id="submitFrame" style="display:none;"></iframe>
+
+    <!-- 결과 메시지 -->
+    <p id="result" style="margin-top:12px;color:#c33"></p>
+  </div>
 </div>
 
-
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoNKsOfOd_aRg7vmpzySrTSydB9nk6lBD_6M6GysQTvECJ7wKabcuPJsJmWPRRJc9oRA/exec";
+  // ----------------------
+  // 클라이언트 스크립트
+  // ----------------------
+  // 파일 개수 제한 체크
+  document.getElementById('files').addEventListener('change', function(e){
+    var files = e.target.files;
+    if (files.length > 10) {
+      alert("사진은 최대 10장까지 업로드 가능합니다.");
+      e.target.value = "";
+    }
+  });
 
-async function submitForm() {
-  document.getElementById("overlay").style.display = "flex";
-  const result = document.getElementById("result");
+  // 전송중 오버레이 제어 (form submit 시)
+  document.getElementById('mainForm').addEventListener('submit', function(){
+    document.getElementById('overlay').style.display = "flex";
+    document.getElementById('result').textContent = "";
+  });
 
-  try {
-    const form = new FormData();
-    form.append("nickname", nickname.value);
-    form.append("code", code.value);
-    form.append("affiliation", affiliation.value);
-    form.append("usedStore", usedStore.value);
-    form.append("storeLink", storeLink.value);
-    form.append("description", description.value);
-
-    [...files.files].forEach(file => form.append("photos", file));
-
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: form,
-    });
-
-    const json = await res.json();
-    result.innerHTML = `✅ 제출 완료!<br>📁 폴더: <a href="${json.folderUrl}" target="_blank">열기</a>`;
-    document.getElementById("overlay").style.display = "none";
-  }
-  catch(err) {
-    result.innerHTML = `❌ 전송 실패: ${err}`;
-    document.getElementById("overlay").style.display = "none";
-  }
-}
+  // iframe 으로 응답이 들어오면 postMessage 로 처리 (서버가 스크립트로 부모창에 메시지 보냄)
+  window.addEventListener("message", function(ev){
+    try {
+      var data = ev.data;
+      // 문자열일 수 있으므로 JSON 파싱 시도
+      if (typeof data === "string") {
+        try { data = JSON.parse(data); } catch(e){ /* not JSON */ }
+      }
+      if (data && data.ok) {
+        document.getElementById('result').innerHTML = "✅ 제출 완료! 저장 폴더: <a href='" + (data.folderUrl||"#") + "' target='_blank'>열기</a>";
+        document.getElementById('mainForm').reset();
+      } else {
+        var msg = (data && data.message) ? data.message : JSON.stringify(data);
+        document.getElementById('result').textContent = "전송 실패: " + msg;
+      }
+    } catch(err){
+      document.getElementById('result').textContent = "응답 처리 중 오류: " + err;
+    } finally {
+      document.getElementById('overlay').style.display = "none";
+    }
+  }, false);
 </script>
-
 </body>
 </html>
