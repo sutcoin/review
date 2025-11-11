@@ -12,7 +12,6 @@
     h1{margin:0 0 8px;font-size:22px;color:#123}
     p.lead{margin:0 0 18px;color:var(--muted)}
     label{display:block;font-weight:700;margin:12px 0 6px}
-    .row{display:flex;gap:12px;align-items:center}
     input[type=text], input[type=url], textarea, input[type=number]{
       width:100%;padding:12px;border-radius:10px;border:1px solid #e6eef9;background:#fbfeff;box-sizing:border-box;
       font-size:14px;color:#123;
@@ -35,7 +34,7 @@
       <h1>SUT 사용 후기 제출</h1>
       <p class="lead">SUT 사용 후기를 입력하고 이미지(선택)를 함께 업로드 해주세요. (사진 최대 10장, 후기 200자)</p>
 
-      <!-- FORM: action에 Apps Script exec URL 넣으세요 -->
+      <!-- FORM: action은 스크립트 배포 URL로 변경하세요 -->
       <form id="mainForm" action="FORM_ACTION_URL" method="post" enctype="multipart/form-data" target="submitFrame">
         <div class="form-grid">
           <div>
@@ -82,9 +81,8 @@
   </div>
 
   <script>
-    // 여기에 배포된 Apps Script exec URL을 넣으세요 (예: https://script.google.com/macros/s/XXXXX/exec)
-    // 배포 후 이 값만 바꾸면 됩니다.
-    const FORM_ACTION_URL = "https://script.google.com/macros/s/AKfycbyq2fH4W5WbjXWKQoUQ_ZdxXBRY1JeZOilmcY1_m7JRQRLZeL8iQxM0hlrLNdMvnOzq/exec";
+    // 배포된 Apps Script exec URL을 여기에 넣으세요 (예: "https://script.google.com/macros/s/AKfy.../exec")
+    const FORM_ACTION_URL = "REPLACE_WITH_YOUR_EXEC_URL";
     document.getElementById('mainForm').action = FORM_ACTION_URL;
 
     // 파일 개수 제한 체크 (최대 10장)
@@ -96,17 +94,13 @@
       }
     });
 
-    // 안전한 postMessage 수신기
+    // postMessage 수신기 (iframe 응답 처리)
     window.addEventListener("message", function(ev){
       try {
-        // 로그(디버깅용)
-        console.log("[MSG EVENT] origin:", ev.origin, "data:", ev.data);
         var d = ev.data;
-
         if (typeof d === "string") {
-          try { d = JSON.parse(d); } catch(e){ /* not JSON */ }
+          try { d = JSON.parse(d); } catch(e){ }
         }
-
         if (d && typeof d === "object" && d.ok !== undefined) {
           if (d.ok) {
             alert("제출 완료되었습니다.\n저장 폴더: " + (d.folderUrl || "확인 불가"));
@@ -116,8 +110,6 @@
           }
           return;
         }
-
-        // 외부 메시지(무시)
       } catch (err) {
         console.error("postMessage error:", err);
       }
